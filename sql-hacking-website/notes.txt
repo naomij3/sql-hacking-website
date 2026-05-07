@@ -1,0 +1,30 @@
+How the website was built:
+Installed node.js
+Created project folder
+Initialised npm and installed express
+Created server.js
+Added home and about pages in server.js
+Added login in server.js
+Installed REST Client for testing
+Created test.http to test login, passes
+npm install mysql2 in the terminal
+Installed MariaDB
+Created database in MariaDB
+Connected server to database
+Installed password hashing
+Added bcrypt to server.js
+Added register page to server.js
+Updated login logic in server.js
+Added user login information to test.http to test registration and login post requests
+Created db.js file and move database code from server.js to db.js
+Created routes folder and auth.js as a child
+Added routing logic to auth.js
+Created controllers folder and authController.js as a child
+Moved login logic to authController.js
+Installed vite React
+Installed npm in client directory
+Updated App.jsx and App.css to add a register and login button
+Installed CORS
+Updated server.js allow frontend to speak to backend using CORS
+Tested website buttons
+Added a login state and a logout button
