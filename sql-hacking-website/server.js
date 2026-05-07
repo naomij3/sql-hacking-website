@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
+const labRoutes = require("./routes/labs");
 
 app.use(cors({
   origin: "http://localhost:5173"
@@ -18,6 +19,7 @@ app.get("/about", (req, res) => {
 });
 
 app.use("/", authRoutes);
+app.use("/labs", labRoutes);
 
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");

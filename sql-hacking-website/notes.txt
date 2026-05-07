@@ -28,3 +28,13 @@ Installed CORS
 Updated server.js allow frontend to speak to backend using CORS
 Tested website buttons
 Added a login state and a logout button
+Installed gitbash and initiated git in folder
+Created sql-hacking-website/.gitignore to ignore node_modules
+Updated App.jsx and App.css to add a dashboard for the labs
+Updated authController to send JSON objects containing user information to the frontend
+Updated App.jsx to receive user information from the database
+Added lab list to App.jsx and App.css
+Updated start lab button to be responsive
+Created routes/labs.js
+Lab start up set up in server.js and labs.js
+Set up url for lab on click in labs.js and App.jsx

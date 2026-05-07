@@ -36,7 +36,13 @@ exports.login = (req, res) => {
 
       if (!match) return res.status(401).send("Invalid login");
 
-      res.send("Login successful");
+      res.json({
+        message: "Login successful",
+        user: {
+          id: user.id,
+          email: user.email
+        }
+      });
     }
   );
 };
