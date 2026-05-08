@@ -14,3 +14,6 @@ npm-debug.log*
 # operating system files
 .DS_Store
 Thumbs.db
+
+# lab dependencies
+labs/*/node_modules/
