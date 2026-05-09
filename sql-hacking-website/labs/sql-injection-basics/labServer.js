@@ -73,7 +73,7 @@ app.get("/", (req, res) => {
             <button type="submit">Login</button>
           </form>
 
-          <p class="hint">Hint: This lab will become intentionally vulnerable.</p>
+          <p class="hint">Hint: This lab is intentionally vulnerable.</p>
         </div>
       </body>
     </html>

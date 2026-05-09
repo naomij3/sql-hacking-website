@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "backend": "node server.js",
+    "frontend": "npm run dev --prefix client",
+    "lab": "node labs/sql-injection-basics/labServer.js",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\" \"npm run lab\""
   },
   "keywords": [],
   "author": "",
@@ -13,7 +16,11 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mysql2": "^3.22.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

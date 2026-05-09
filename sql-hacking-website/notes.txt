@@ -43,3 +43,7 @@ Added fake login to labServer.js
 Created fake database lab_users.sql
 Installed mysql2 in the sql-injection-basics folder
 Connected lab_users.sql to labServer.js
+Installed concurrently
+Updated sql-hacking-website\package.json to run all back end and front end nodes concurrently
+Installed dotenv
+Added .env file
