@@ -123,3 +123,10 @@ a {
 .flag-form button {
   width: auto;
 }
+
+.lab-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}

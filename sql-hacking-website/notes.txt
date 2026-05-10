@@ -54,3 +54,6 @@ Added progress bar to App.jsx and App.css
 Added flag submission to App.jsx and App.css
 Added flag check route to routes\labs.js
 Updated flag submission in App.jsx to call from backend
+Added saved states with useEffect in App.jsx
+Added trim to flag check in routes\labs.js
+Added reset lab to App.jsx, routes\labs.js, and App.csx

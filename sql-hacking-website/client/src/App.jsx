@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -7,11 +7,44 @@ function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [loggedInUser, setLoggedInUser] = useState(null);
-  const [labStatus, setLabStatus] = useState("Not started");
-  const [labUrl, setLabUrl] = useState(null);
-  const [labProgress, setLabProgress] = useState(0);
-  const [submittedFlag, setSubmittedFlag] = useState("");
+  
+  const [loggedInUser, setLoggedInUser] = useState(
+    localStorage.getItem("loggedInUser")
+  );
+
+  const [labStatus, setLabStatus] = useState(
+    localStorage.getItem("labStatus") || "Not started"
+  );
+
+  const [labUrl, setLabUrl] = useState(
+    localStorage.getItem("labUrl")
+  );
+
+  const [labProgress, setLabProgress] = useState(
+    Number(localStorage.getItem("labProgress")) || 0
+  );
+
+  const [submittedFlag, setSubmittedFlag] = useState(
+    localStorage.getItem("submittedFlag") || ""
+  );
+
+  useEffect(() => {
+    if (loggedInUser) {
+      localStorage.setItem("loggedInUser", loggedInUser);
+    } else {
+      localStorage.removeItem("loggedInUser");
+    }
+
+    localStorage.setItem("labStatus", labStatus);
+    localStorage.setItem("labProgress", String(labProgress));
+    localStorage.setItem("submittedFlag", submittedFlag);
+
+    if (labUrl) {
+      localStorage.setItem("labUrl", labUrl);
+    } else {
+      localStorage.removeItem("labUrl");
+    }
+  }, [loggedInUser, labStatus, labUrl, labProgress]);
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -63,6 +96,10 @@ async function handleLogin(e) {
 
   function handleLogout() {
     setLoggedInUser(null);
+    setLabStatus("Not started");
+    setLabUrl(null);
+    setLabProgress(0);
+    setSubmittedFlag("");
     setMessage("Logged out");
   }
 
@@ -89,6 +126,21 @@ async function handleLogin(e) {
     setLabStatus(data.lab.status);
     setLabUrl(data.lab.url);
     setLabProgress(0);
+    setSubmittedFlag("");
+    setMessage(data.message);
+  }
+
+  async function handleResetLab() {
+    const response = await fetch("http://localhost:3000/labs/reset", {
+      method: "POST",
+    });
+
+    const data = await response.json();
+
+    setLabStatus(data.lab.status);
+    setLabUrl(data.lab.url);
+    setLabProgress(data.lab.progress);
+    setSubmittedFlag("");
     setMessage(data.message);
   }
 
@@ -116,6 +168,10 @@ async function handleLogin(e) {
       setMessage(data.message);
       setLabStatus(data.lab.status);
       setLabProgress(data.lab.progress);
+
+      if (data.correct) {
+        setSubmittedFlag("");
+      }
     } catch (err) {
         console.error("Flag submit failed:", err);
         setMessage("Could not submit flag");
@@ -216,13 +272,37 @@ async function handleLogin(e) {
                 </form>
               )}
               
-              {labStatus !== "Running" ? (
-                <button onClick={handleStartLab}>Start Lab</button>
-              ) : (
-                  <button onClick={handleStopLab}>Stop Lab</button>
-              )}
+              <div className="lab-actions">
+                {labStatus !== "Running" && labStatus !== "Completed" && (
+                  <button onClick={handleStartLab}>Start Lab</button>
+                )}
 
+                {labStatus === "Running" && (
+                  <button onClick={handleStopLab}>Stop Lab</button>
+                )}
+
+                {(labStatus === "Running" || labStatus === "Completed") && (
+                  <button onClick={handleResetLab}>Reset Lab</button>
+                )}
+              </div>
             </div>
+
+            <div className="lab-card">
+                <h4>SQL Injection Hacks 2</h4>
+                <p>Learn how attackers can use SQL queries to bypass login systems.</p>
+
+                <p className="lab-status">Status: Not Started</p>
+                <p className="lab-progress">Progress: 0%</p>
+
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: "0%" }}></div>
+                </div>
+
+                <button onClick={() => setMessage("SQL Injection Basics 2 will be added next.")}>
+                  Start Lab
+                </button>
+              </div>
+              
           </div>
         </div>
       )}

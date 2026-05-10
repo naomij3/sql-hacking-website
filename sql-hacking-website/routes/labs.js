@@ -23,10 +23,23 @@ router.post("/stop", (req, res) => {
   });
 });
 
+router.post("/reset", (req, res) => {
+  res.json({
+    message: "Lab reset",
+    lab: {
+      name: "SQL Injection Basics",
+      status: "Not started",
+      progress: 0,
+      url: null,
+    },
+  });
+});
+
 router.post("/submit-flag", (req, res) => {
   const {flag} = req.body;
+  const cleanedFlag = flag.trim();
 
-  if (flag === "FLAG{sql-injection-basics}") {
+  if (cleanedFlag === "FLAG{sql_injection_basics}") {
     return res.json({
       correct: true,
       message: "Correct flag! Lab completed.",
