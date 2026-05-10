@@ -12,4 +12,39 @@ router.post("/start", (req, res) => {
   });
 });
 
+router.post("/stop", (req, res) => {
+  res.json({
+    message: "Lab stopped",
+    lab: {
+      name: "SQL Injection Basics",
+      status: "Not started",
+      url: null
+    }
+  });
+});
+
+router.post("/submit-flag", (req, res) => {
+  const {flag} = req.body;
+
+  if (flag === "FLAG{sql-injection-basics}") {
+    return res.json({
+      correct: true,
+      message: "Correct flag! Lab completed.",
+      lab: {
+        status: "Completed",
+        progress: 100
+      }
+    });
+  }
+
+  res.status(400).json({
+    correct: false,
+    message: "Wrong flag, try again.",
+    lab: {
+      status: "Running",
+      progress: 25
+    }
+  });
+});
+
 module.exports = router;

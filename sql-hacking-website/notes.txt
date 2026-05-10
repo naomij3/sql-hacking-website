@@ -37,7 +37,7 @@ Added lab list to App.jsx and App.css
 Updated start lab button to be responsive
 Created routes/labs.js
 Lab start up set up in server.js and labs.js
-Set up url for lab on click in labs.js and App.jsx
+Set up url for lab in labs.js and App.jsx
 Created labs\sql-injection-basics\labServer.js and added some content to the lab page
 Added fake login to labServer.js
 Created fake database lab_users.sql
@@ -47,3 +47,10 @@ Installed concurrently
 Updated sql-hacking-website\package.json to run all back end and front end nodes concurrently
 Installed dotenv
 Added .env file
+Updated db.js to move database credentials to environment variables
+Added stop lab logic to labs.js
+Added stop route and button to App.jsx
+Added progress bar to App.jsx and App.css
+Added flag submission to App.jsx and App.css
+Added flag check route to routes\labs.js
+Updated flag submission in App.jsx to call from backend

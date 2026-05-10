@@ -4,17 +4,14 @@ import "./App.css";
 function App() {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
-
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-
   const [message, setMessage] = useState("");
-
   const [loggedInUser, setLoggedInUser] = useState(null);
-
   const [labStatus, setLabStatus] = useState("Not started");
-
   const [labUrl, setLabUrl] = useState(null);
+  const [labProgress, setLabProgress] = useState(0);
+  const [submittedFlag, setSubmittedFlag] = useState("");
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -78,7 +75,51 @@ async function handleLogin(e) {
 
     setLabStatus(data.lab.status);
     setLabUrl(data.lab.url);
+    setLabProgress(25);
     setMessage(data.message);
+  }
+
+  async function handleStopLab() {
+    const response = await fetch("http://localhost:3000/labs/stop", {
+      method: "POST",
+    });
+
+    const data = await response.json();
+
+    setLabStatus(data.lab.status);
+    setLabUrl(data.lab.url);
+    setLabProgress(0);
+    setMessage(data.message);
+  }
+
+  async function handleSubmitFlag(e) {
+    e.preventDefault();
+
+    console.log("Submit flag clicked");
+    console.log("Submitted flag:", submittedFlag);
+
+    try {
+      const response = await fetch("http://localhost:3000/labs/submit-flag", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          flag: submittedFlag,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("Backend response:", data);
+
+      setMessage(data.message);
+      setLabStatus(data.lab.status);
+      setLabProgress(data.lab.progress);
+    } catch (err) {
+        console.error("Flag submit failed:", err);
+        setMessage("Could not submit flag");
+    }
   }
 
   return (
@@ -147,7 +188,13 @@ async function handleLogin(e) {
               <p>Learn how attackers can use SQL queries to bypass login systems.</p>
 
               <p className="lab-status">Status: {labStatus}</p>
-              
+              <p className="lab-progress">Progress: {labProgress}%</p>
+
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${labProgress}%`}}>
+                </div>
+              </div>
+
               {labUrl && (
                 <p>
                   Lab URL:{" "}
@@ -157,7 +204,24 @@ async function handleLogin(e) {
                 </p>
               )}
 
-              <button onClick={handleStartLab}>Start Lab</button>
+              {labStatus === "Running" && (
+                <form onSubmit={handleSubmitFlag} className="flag-form">
+                  <input
+                    type="text"
+                    placeholder="Submit flag"
+                    value={submittedFlag}
+                    onChange={(e) => setSubmittedFlag(e.target.value)}
+                  />
+                  <button type="submit">Submit Flag</button>
+                </form>
+              )}
+              
+              {labStatus !== "Running" ? (
+                <button onClick={handleStartLab}>Start Lab</button>
+              ) : (
+                  <button onClick={handleStopLab}>Stop Lab</button>
+              )}
+
             </div>
           </div>
         </div>
