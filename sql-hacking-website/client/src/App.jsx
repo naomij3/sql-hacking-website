@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import {Link, Route, Routes } from "react-router-dom";
 import "./App.css";
 
 function App() {
@@ -28,6 +29,11 @@ function App() {
     localStorage.getItem("submittedFlag") || ""
   );
 
+  const [completedNotes, setCompletedNotes] = useState(() => {
+    const saved = localStorage.getItem("completedNotes");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   useEffect(() => {
     if (loggedInUser) {
       localStorage.setItem("loggedInUser", loggedInUser);
@@ -44,7 +50,9 @@ function App() {
     } else {
       localStorage.removeItem("labUrl");
     }
-  }, [loggedInUser, labStatus, labUrl, labProgress]);
+
+    localStorage.setItem("completedNotes", JSON.stringify(completedNotes));
+  }, [loggedInUser, labStatus, labUrl, labProgress, submittedFlag, completedNotes]);
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -96,9 +104,6 @@ async function handleLogin(e) {
 
   function handleLogout() {
     setLoggedInUser(null);
-    setLabStatus("Not started");
-    setLabUrl(null);
-    setLabProgress(0);
     setSubmittedFlag("");
     setMessage("Logged out");
   }
@@ -178,61 +183,70 @@ async function handleLogin(e) {
     }
   }
 
-  return (
-    <div className="page">
-      <h1>SQL Hacking Website</h1>
+  const completedLabs = labStatus === "Completed" ? 1 : 0;
 
-      {loggedInUser && (
-        <div className="logged-in-box">
-          <p>Logged in as {loggedInUser}</p>
-          <button onClick={handleLogout}>Logout</button>
+  const labContribution = completedLabs * 15;
+  const notesContribution = completedNotes.length * 5;
+  const overallProgress = labContribution + notesContribution;
+
+  let currentLevel = "Level 1";
+  if (overallProgress >= 80) {
+    currentLevel = "Level 5";
+  } else if (overallProgress >=60) {
+    currentLevel = "Level 4";
+  } else if (overallProgress >= 40) {
+    currentLevel = "Level 3";
+  } else if (overallProgress >= 20) {
+    currentLevel = "Level 2";
+  }
+
+  const currentLevelNumber = Math.min(5, Math.floor(overallProgress / 20) + 1);
+
+  function handleCompleteNote(noteID) {
+    if (!completedNotes.includes(noteID)) {
+      setCompletedNotes([...completedNotes, noteID]);
+      setMessage("Note completed")
+    }
+  }
+
+  function HomePage() {
+    return (
+      <div className="dashboard">
+        <h2>Home</h2>
+        <p>Welcome, {loggedInUser}.</p>
+        <p>SQL Learning Dashboard</p>
+
+        <div className="overall-progress">
+          <h3>{currentLevel}</h3>
+          <p>Overall Progress: {overallProgress}%</p>
+
+          <div className="progress-bar">
+            <div className="progress-fill"
+            style={{ width : `${overallProgress}%`}}>
+            </div>  
+          </div> 
+
+          <div className="level-track">
+            {[1, 2, 3, 4, 5].map((level) => (
+              <div
+              key={level}
+              className={
+                level <= currentLevelNumber
+                  ? "level-box level-box active"
+                  : "level-box"
+              } >
+                Level {level}
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {!loggedInUser ? (
-        <div className="forms">
-          <form onSubmit={handleRegister} className="card">
-            <h2>Register</h2>
-
-            <input
-              type="email"
-              placeholder="Email"
-              value={registerEmail}
-              onChange={(e) => setRegisterEmail(e.target.value)}
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              value={registerPassword}
-              onChange={(e) => setRegisterPassword(e.target.value)}
-            />
-
-            <button type="submit">Create Account</button>
-          </form>
-
-          <form onSubmit={handleLogin} className="card">
-            <h2>Login</h2>
-
-            <input
-              type="email"
-              placeholder="Email"
-              value={loginEmail}
-              onChange={(e) => setLoginEmail(e.target.value)}
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-            />
-
-            <button type="submit">Login</button>
-          </form>
-        </div>
-      ) : (
-        <div className="dashboard">
+  function LabsPage() {
+    return (
+      <div className="dashboard">
           <h2>Dashboard</h2>
           <p>Welcome, {loggedInUser}.</p>
 
@@ -302,8 +316,137 @@ async function handleLogin(e) {
                   Start Lab
                 </button>
               </div>
-              
+
           </div>
+        </div>
+    );
+  }
+
+  function NotesPage() {
+    const notes = [
+      {
+        id: 1,
+        title: "What is SQL Injection?",
+        description: "Learn what SQL injection is and how it works.",
+      },
+      {
+        id: 2,
+        title: "Login Bypass Basics",
+        description: "Understand how weak login queries can be bypassed.",
+      },
+      {
+        id: 3,
+        title: "Quotes, Comments, and Query Structure",
+        description: "Learn how quotes and SQL comments affect a query.",
+      },
+      {
+        id: 4,
+        title: "UNION-Based Injection",
+        description: "Learn how UNION can combine results from different queries.",
+      },
+      {
+        id: 5,
+        title: "Blind SQL Injection",
+        description: "Understand how attackers infer data without direct output.",
+      },
+    ];
+
+    return (
+      <div className="dashboard">
+        <h2>Notes</h2>
+        <p>SQL injection guides to complete</p>
+
+        <div className="labs-section">
+          {notes.map((note) => {
+            const isComplete = completedNotes.includes(note.id);
+
+            return (
+              <div className="lab-card" key={note.id}>
+                <h4>{note.title}</h4>
+                <p>{note.description}</p>
+
+                <p className="lab-status">
+                  Status: {isComplete ? "Completed" : "Note completed"}
+                </p>
+
+                <button onClick={() => handleCompleteNote(note.id)}
+                disabled={isComplete}>
+                  {isComplete ? "Completed" : "Mark Complete"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="page">
+      <h1>SQL Hacking Website</h1>
+
+      {loggedInUser && (
+        <div className="logged-in-box">
+          <p>Logged in as {loggedInUser}</p>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      )}
+
+      {!loggedInUser ? (
+        <div className="forms">
+          <form onSubmit={handleRegister} className="card">
+            <h2>Register</h2>
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={registerEmail}
+              onChange={(e) => setRegisterEmail(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={registerPassword}
+              onChange={(e) => setRegisterPassword(e.target.value)}
+            />
+
+            <button type="submit">Create Account</button>
+          </form>
+
+          <form onSubmit={handleLogin} className="card">
+            <h2>Login</h2>
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+            />
+
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      ) : (
+        <div>
+          <nav className="navbar">
+            <Link to="/">Home</Link>
+            <Link to="/labs">Labs</Link>
+            <Link to="/notes">Notes</Link>
+          </nav>
+
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/labs" element={<LabsPage />} />
+            <Route path="/notes" element={<NotesPage />} />
+          </Routes>
         </div>
       )}
 
