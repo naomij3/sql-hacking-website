@@ -3,6 +3,64 @@ import {Link, Route, Routes } from "react-router-dom";
 import "./App.css";
 
 function App() {
+  const initialLabs = [
+    {
+      id: 1,
+      title: "SQL Injection Basics",
+      description: "Bypass a vulnerable login form using basic SQL injection.",
+      objective: "Log in without knowing the correct password.",
+      difficulty: "Very Easy",
+      status: "Not started",
+      progress: 0,
+      url: null,
+      submittedFlag: "",
+    },
+    {
+      id: 2,
+      title: "Comment-Based Login Bypass",
+      description: "Use SQL comments to bypass password checks.",
+      objective: "Log in as the admin user by commenting out part of the query.",
+      difficulty: "Easy",
+      status: "Not started",
+      progress: 0,
+      url: null,
+      submittedFlag: "",
+    },
+    {
+      id: 3,
+      title: "Error-Based SQL Injection",
+      description: "Use database errors to understand vulnerable query structure.",
+      objective: "Trigger an error and use it to craft a working payload.",
+      difficulty: "Medium",
+      status: "Not started",
+      progress: 0,
+      url: null,
+      submittedFlag: "",
+    },
+    {
+      id: 4,
+      title: "UNION-Based Extraction",
+      description: "Use UNION queries to extract hidden information.",
+      objective: "Extract a hidden flag from another database table.",
+      difficulty: "Hard",
+      status: "Not started",
+      progress: 0,
+      url: null,
+      submittedFlag: "",
+    },
+    {
+      id: 5,
+      title: "Blind SQL Injection Challenge",
+      description: "Infer hidden data using true/false responses.",
+      objective: "Recover the flag without seeing direct database output.",
+      difficulty: "Challenging",
+      status: "Not started",
+      progress: 0,
+      url: null,
+      submittedFlag: "",
+    },
+  ];
+
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
@@ -13,21 +71,10 @@ function App() {
     localStorage.getItem("loggedInUser")
   );
 
-  const [labStatus, setLabStatus] = useState(
-    localStorage.getItem("labStatus") || "Not started"
-  );
-
-  const [labUrl, setLabUrl] = useState(
-    localStorage.getItem("labUrl")
-  );
-
-  const [labProgress, setLabProgress] = useState(
-    Number(localStorage.getItem("labProgress")) || 0
-  );
-
-  const [submittedFlag, setSubmittedFlag] = useState(
-    localStorage.getItem("submittedFlag") || ""
-  );
+  const [labs, setLabs] = useState(() => {
+    const savedLabs = localStorage.getItem("labs");
+    return savedLabs ? JSON.parse(savedLabs) :initialLabs;
+  });
 
   const [completedNotes, setCompletedNotes] = useState(() => {
     const saved = localStorage.getItem("completedNotes");
@@ -41,18 +88,9 @@ function App() {
       localStorage.removeItem("loggedInUser");
     }
 
-    localStorage.setItem("labStatus", labStatus);
-    localStorage.setItem("labProgress", String(labProgress));
-    localStorage.setItem("submittedFlag", submittedFlag);
-
-    if (labUrl) {
-      localStorage.setItem("labUrl", labUrl);
-    } else {
-      localStorage.removeItem("labUrl");
-    }
-
+    localStorage.setItem("labs", JSON.stringify(labs));
     localStorage.setItem("completedNotes", JSON.stringify(completedNotes));
-  }, [loggedInUser, labStatus, labUrl, labProgress, submittedFlag, completedNotes]);
+  }, [loggedInUser, labs, completedNotes]);
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -104,56 +142,75 @@ async function handleLogin(e) {
 
   function handleLogout() {
     setLoggedInUser(null);
-    setSubmittedFlag("");
     setMessage("Logged out");
   }
 
-  async function handleStartLab() {
+  function updateLab(labID, updates) {
+    setLabs((currentLabs) =>
+      currentLabs.map((lab) =>
+        lab.id === labID ? { ...lab, ...updates } : lab
+      )   
+    );
+  }
+
+  function getLab(labID) {
+    return labs.find((lab) => lab.id === labID);
+  }
+
+  async function handleStartLab(labID) {
     const response = await fetch("http://localhost:3000/labs/start", {
       method: "POST",
     });
 
     const data = await response.json();
 
-    setLabStatus(data.lab.status);
-    setLabUrl(data.lab.url);
-    setLabProgress(25);
+    updateLab(labID, {
+      status: data.lab.status,
+      url: data.lab.url,
+      progress: 25,
+    });
+
     setMessage(data.message);
   }
 
-  async function handleStopLab() {
+  async function handleStopLab(labID) {
     const response = await fetch("http://localhost:3000/labs/stop", {
       method: "POST",
     });
 
     const data = await response.json();
 
-    setLabStatus(data.lab.status);
-    setLabUrl(data.lab.url);
-    setLabProgress(0);
-    setSubmittedFlag("");
+    updateLab(labID, {
+      status: data.lab.status,
+      url: data.lab.url,
+      progress: 0,
+      submittedFlag: "",
+    });
+
     setMessage(data.message);
   }
 
-  async function handleResetLab() {
+  async function handleResetLab(labID) {
     const response = await fetch("http://localhost:3000/labs/reset", {
       method: "POST",
     });
 
     const data = await response.json();
 
-    setLabStatus(data.lab.status);
-    setLabUrl(data.lab.url);
-    setLabProgress(data.lab.progress);
-    setSubmittedFlag("");
+    updateLab(labID, {
+      status: data.lab.status,
+      url: data.lab.url,
+      progress: data.lab.progress,
+      submittedFlag: "",
+    });
+
     setMessage(data.message);
   }
 
   async function handleSubmitFlag(e) {
     e.preventDefault();
 
-    console.log("Submit flag clicked");
-    console.log("Submitted flag:", submittedFlag);
+    const lab = getLab(labID);
 
     try {
       const response = await fetch("http://localhost:3000/labs/submit-flag", {
@@ -162,30 +219,28 @@ async function handleLogin(e) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          flag: submittedFlag,
+          flag: lab.submittedFlag,
         }),
       });
 
       const data = await response.json();
 
-      console.log("Backend response:", data);
-
       setMessage(data.message);
-      setLabStatus(data.lab.status);
-      setLabProgress(data.lab.progress);
 
-      if (data.correct) {
-        setSubmittedFlag("");
-      }
+      updateLab(labID, {
+        status: data.lab.status,
+        progress: data.lab.progress,
+        submittedFlag: data.correct ? "" : lab.submittedFlag,
+      });
     } catch (err) {
         console.error("Flag submit failed:", err);
         setMessage("Could not submit flag");
     }
   }
 
-  const completedLabs = labStatus === "Completed" ? 1 : 0;
+  const completedLabCount = labs.filter((lab) => lab.status === "Completed").length;
 
-  const labContribution = completedLabs * 15;
+  const labContribution = completedLabCount * 15;
   const notesContribution = completedNotes.length * 5;
   const overallProgress = labContribution + notesContribution;
 
@@ -232,7 +287,7 @@ async function handleLogin(e) {
               key={level}
               className={
                 level <= currentLevelNumber
-                  ? "level-box level-box active"
+                  ? "level-box level-box-active"
                   : "level-box"
               } >
                 Level {level}
@@ -247,78 +302,89 @@ async function handleLogin(e) {
   function LabsPage() {
     return (
       <div className="dashboard">
-          <h2>Dashboard</h2>
-          <p>Welcome, {loggedInUser}.</p>
+        <h2>Labs</h2>
+        <p>Complete SQL injection labs to earn 75% of your total progress.</p>
 
-          <div className="labs-section">
-            <h3>SQL Labs</h3>
+        <div className="labs-section">
+          {labs.map((lab) => (
+            <div className="lab-card" key={lab.id}>
+              <h4>{lab.title}</h4>
+              <p>{lab.description}</p>
 
-            <div className="lab-card">
-              <h4>SQL Injection Hacks</h4>
-              <p>Learn how attackers can use SQL queries to bypass login systems.</p>
+              <p className="lab-meta">Difficulty: {lab.difficulty}</p>
+              <p className="lab-objective">Objective: {lab.objective}</p>
 
-              <p className="lab-status">Status: {labStatus}</p>
-              <p className="lab-progress">Progress: {labProgress}%</p>
+              <p className="lab-status">Status: {lab.status}</p>
+              <p className="lab-progress">Progress: {lab.progress}%</p>
 
               <div className="progress-bar">
-                <div className="progress-fill" style={{width: `${labProgress}%`}}>
-                </div>
+                <div
+                  className="progress-fill"
+                  style={{ width: `${lab.progress}%` }}
+                ></div>
               </div>
 
-              {labUrl && (
+              {lab.url && (
                 <p>
                   Lab URL:{" "}
-                  <a href={labUrl} target="_blank" rel="noreferrer">
-                    {labUrl}
+                  <a href={lab.url} target="_blank" rel="noreferrer">
+                    {lab.url}
                   </a>
                 </p>
               )}
 
-              {labStatus === "Running" && (
-                <form onSubmit={handleSubmitFlag} className="flag-form">
+              {lab.id === 1 && lab.status === "Running" && (
+                <form
+                  onSubmit={(e) => handleSubmitFlag(e, lab.id)}
+                  className="flag-form"
+                >
                   <input
                     type="text"
                     placeholder="Submit flag"
-                    value={submittedFlag}
-                    onChange={(e) => setSubmittedFlag(e.target.value)}
+                    value={lab.submittedFlag}
+                    onChange={(e) =>
+                      updateLab(lab.id, { submittedFlag: e.target.value })
+                    }
                   />
                   <button type="submit">Submit Flag</button>
                 </form>
               )}
-              
+
               <div className="lab-actions">
-                {labStatus !== "Running" && labStatus !== "Completed" && (
-                  <button onClick={handleStartLab}>Start Lab</button>
-                )}
+                {lab.id === 1 ? (
+                  <>
+                    {lab.status !== "Running" && lab.status !== "Completed" && (
+                      <button onClick={() => handleStartLab(lab.id)}>
+                        Start Lab
+                      </button>
+                    )}
 
-                {labStatus === "Running" && (
-                  <button onClick={handleStopLab}>Stop Lab</button>
-                )}
+                    {lab.status === "Running" && (
+                      <button onClick={() => handleStopLab(lab.id)}>
+                        Stop Lab
+                      </button>
+                    )}
 
-                {(labStatus === "Running" || labStatus === "Completed") && (
-                  <button onClick={handleResetLab}>Reset Lab</button>
+                    {(lab.status === "Running" || lab.status === "Completed") && (
+                      <button onClick={() => handleResetLab(lab.id)}>
+                        Reset Lab
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={() =>
+                      setMessage(`${lab.title} is planned for the next build.`)
+                    }
+                  >
+                    Start Lab
+                  </button>
                 )}
               </div>
             </div>
-
-            <div className="lab-card">
-                <h4>SQL Injection Hacks 2</h4>
-                <p>Learn how attackers can use SQL queries to bypass login systems.</p>
-
-                <p className="lab-status">Status: Not Started</p>
-                <p className="lab-progress">Progress: 0%</p>
-
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: "0%" }}></div>
-                </div>
-
-                <button onClick={() => setMessage("SQL Injection Basics 2 will be added next.")}>
-                  Start Lab
-                </button>
-              </div>
-
-          </div>
+          ))}
         </div>
+      </div>
     );
   }
 
@@ -366,7 +432,7 @@ async function handleLogin(e) {
                 <p>{note.description}</p>
 
                 <p className="lab-status">
-                  Status: {isComplete ? "Completed" : "Note completed"}
+                  Status: {isComplete ? "Completed" : "Not completed"}
                 </p>
 
                 <button onClick={() => handleCompleteNote(note.id)}

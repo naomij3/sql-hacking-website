@@ -63,3 +63,5 @@ Added routing to App.jsx
 Added progress bar and level to App.jsx
 Added notes to notes page in App.jsx
 Updated progress bar in App.jsx and App.css
+Updated lab logic in App.jsx from a single lab to a scalable lab page
+Added description and difficulty level to each lab in App.jsx and App.css

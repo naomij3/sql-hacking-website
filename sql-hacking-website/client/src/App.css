@@ -152,3 +152,14 @@ a {
   background: #2563eb;
   color: white;
 }
+
+.lab-meta {
+  margin-top: 12px;
+  font-weight: bold;
+  color: #93c5fd;
+}
+
+.lab-objective {
+  margin-top: 8px;
+  color: #d1d5db;
+}
