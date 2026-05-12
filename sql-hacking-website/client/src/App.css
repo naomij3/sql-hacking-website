@@ -163,3 +163,53 @@ a {
   margin-top: 8px;
   color: #d1d5db;
 }
+
+.progress-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.summary-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: #374151;
+}
+
+.summary-card h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.note-content {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: #111827;
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+.note-check {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #374151;
+}
+
+.answer-option {
+  display: block;
+  margin: 10px 0;
+  color: #e5e7eb;
+}
+
+.answer-option input {
+  width: auto;
+  margin-right: 8px;
+}
+
+.lab-availability {
+  margin-top: 8px;
+  font-weight: bold;
+  color: #a7f3d0;
+}

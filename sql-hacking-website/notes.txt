@@ -65,3 +65,7 @@ Added notes to notes page in App.jsx
 Updated progress bar in App.jsx and App.css
 Updated lab logic in App.jsx from a single lab to a scalable lab page
 Added description and difficulty level to each lab in App.jsx and App.css
+Updated Home page to increase progress visibility in App.jsx and App.css
+Added button to show or hide content for each note in App.jsx
+Added multiple choice questions for each note in App.jsx and App.css
+Added lab availability status to App.jsx

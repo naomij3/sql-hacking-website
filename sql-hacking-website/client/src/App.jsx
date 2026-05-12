@@ -10,6 +10,7 @@ function App() {
       description: "Bypass a vulnerable login form using basic SQL injection.",
       objective: "Log in without knowing the correct password.",
       difficulty: "Very Easy",
+      available: true,
       status: "Not started",
       progress: 0,
       url: null,
@@ -21,6 +22,7 @@ function App() {
       description: "Use SQL comments to bypass password checks.",
       objective: "Log in as the admin user by commenting out part of the query.",
       difficulty: "Easy",
+      available: false,
       status: "Not started",
       progress: 0,
       url: null,
@@ -32,6 +34,7 @@ function App() {
       description: "Use database errors to understand vulnerable query structure.",
       objective: "Trigger an error and use it to craft a working payload.",
       difficulty: "Medium",
+      available: false,
       status: "Not started",
       progress: 0,
       url: null,
@@ -43,6 +46,7 @@ function App() {
       description: "Use UNION queries to extract hidden information.",
       objective: "Extract a hidden flag from another database table.",
       difficulty: "Hard",
+      available: false,
       status: "Not started",
       progress: 0,
       url: null,
@@ -54,6 +58,7 @@ function App() {
       description: "Infer hidden data using true/false responses.",
       objective: "Recover the flag without seeing direct database output.",
       difficulty: "Challenging",
+      available: false,
       status: "Not started",
       progress: 0,
       url: null,
@@ -66,6 +71,8 @@ function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [openNoteId, setOpenNoteId] = useState(null);
+  const [noteAnswers, setNoteAnswers] = useState({}); 
   
   const [loggedInUser, setLoggedInUser] = useState(
     localStorage.getItem("loggedInUser")
@@ -257,10 +264,22 @@ async function handleLogin(e) {
 
   const currentLevelNumber = Math.min(5, Math.floor(overallProgress / 20) + 1);
 
-  function handleCompleteNote(noteID) {
+  function handleCompleteNote(noteID, correctAnswer) {
+    const selectedAnswer = noteAnswers[noteID];
+
+    if (!selectedAnswer) {
+      setMessage("Please choose an answer first.");
+      return;
+    }
+
+    if (selectedAnswer !== correctAnswer){
+      setMessage("Incorrect answer. Try reading the note again.");
+      return;
+    }
+
     if (!completedNotes.includes(noteID)) {
       setCompletedNotes([...completedNotes, noteID]);
-      setMessage("Note completed")
+      setMessage("Correct! Note completed.")
     }
   }
 
@@ -277,7 +296,7 @@ async function handleLogin(e) {
 
           <div className="progress-bar">
             <div className="progress-fill"
-            style={{ width : `${overallProgress}%`}}>
+            style={{ width : `${overallProgress}%` }}>
             </div>  
           </div> 
 
@@ -293,6 +312,20 @@ async function handleLogin(e) {
                 Level {level}
               </div>
             ))}
+          </div>
+
+          <div className="progress-summary">
+            <div className="summary-card">
+              <h4>Labs</h4>
+              <p>{completedLabCount} / 5 completed</p>
+              <p>{labContribution}% / 75%</p>
+            </div>
+
+            <div className="summary-card">
+              <h4>Notes</h4>
+              <p>{completedNotes.length} / 5 completed</p>
+              <p>{notesContribution}% / 25%</p>
+            </div>
           </div>
         </div>
       </div>
@@ -323,6 +356,10 @@ async function handleLogin(e) {
                   style={{ width: `${lab.progress}%` }}
                 ></div>
               </div>
+
+              <p className="lab-availability">
+                {lab.available ? "Available now" : "Planned lab"}
+              </p>
 
               {lab.url && (
                 <p>
@@ -374,10 +411,10 @@ async function handleLogin(e) {
                 ) : (
                   <button
                     onClick={() =>
-                      setMessage(`${lab.title} is planned for the next build.`)
+                      setMessage(`${lab.title} is part of the 5-lab roadmap.`)
                     }
                   >
-                    Start Lab
+                    View Plan
                   </button>
                 )}
               </div>
@@ -394,51 +431,138 @@ async function handleLogin(e) {
         id: 1,
         title: "What is SQL Injection?",
         description: "Learn what SQL injection is and how it works.",
+        content:
+          "SQL injection happens when user input is placed directly into a SQL query without being safely handled. This can let an attacker change the meaning of the query and access data or bypass checks.",
+        question: "What causes SQL injection?",
+        answers: [
+          "Using CSS incorrectly",
+          "Putting unsanitised user input directly into SQL queries",
+          "Using too many React components",
+        ],
+        correctAnswer: "Putting unsanitised user input directly into SQL queries",
       },
       {
         id: 2,
         title: "Login Bypass Basics",
         description: "Understand how weak login queries can be bypassed.",
+        content:
+          "A login form usually checks whether a username and password match a database record. If the query is built unsafely, input like ' OR '1'='1 can make the condition always true.",
+        question: "Why can ' OR '1'='1 bypass a weak login?",
+        answers: [
+          "It deletes the users table",
+          "It makes the SQL condition always true",
+          "It encrypts the password",
+        ],
+        correctAnswer: "It makes the SQL condition always true",
       },
       {
         id: 3,
         title: "Quotes, Comments, and Query Structure",
         description: "Learn how quotes and SQL comments affect a query.",
+        content:
+          "Single quotes can break out of string values in SQL. Comment markers such as -- can cause the rest of a query to be ignored, which is why payloads like admin' -- can bypass password checks.",
+        question: "What does -- commonly do in SQL?",
+        answers: [
+          "Comments out the rest of the query",
+          "Starts a new database",
+          "Creates a password hash",
+        ],
+        correctAnswer: "Comments out the rest of the query",
       },
       {
         id: 4,
         title: "UNION-Based Injection",
         description: "Learn how UNION can combine results from different queries.",
+        content:
+          "UNION lets SQL combine results from multiple SELECT statements. In an injection attack, this can be abused to display data from other tables if the attacker can match the number and type of columns.",
+        question: "What does UNION do in SQL?",
+        answers: [
+          "Combines results from multiple SELECT queries",
+          "Blocks a login attempt",
+          "Deletes duplicate users automatically",
+        ],
+        correctAnswer: "Combines results from multiple SELECT queries",
       },
       {
         id: 5,
         title: "Blind SQL Injection",
         description: "Understand how attackers infer data without direct output.",
+        content:
+          "Blind SQL injection happens when the page does not directly show database results. Instead, attackers infer information from differences in responses, such as true/false messages or delays.",
+        question: "What makes blind SQL injection different?",
+        answers: [
+          "The attacker cannot use quotes",
+          "The database is not SQL-based",
+          "The attacker infers results indirectly from page behaviour",
+        ],
+        correctAnswer:
+          "The attacker infers results indirectly from page behaviour",
       },
     ];
 
     return (
       <div className="dashboard">
         <h2>Notes</h2>
-        <p>SQL injection guides to complete</p>
+        <p>Complete notes and checks to earn 25% of your total progress.</p>
 
         <div className="labs-section">
           {notes.map((note) => {
             const isComplete = completedNotes.includes(note.id);
+            const isOpen = openNoteId === note.id;
 
             return (
               <div className="lab-card" key={note.id}>
                 <h4>{note.title}</h4>
                 <p>{note.description}</p>
 
+                {isOpen && (
+                  <div className="note-content">
+                    <p>{note.content}</p>
+
+                    <div className="note-check">
+                      <h5>Quick Check</h5>
+                      <p>{note.question}</p>
+
+                      {note.answers.map((answer) => (
+                        <label className="answer-option" key = {answer}>
+                          <input 
+                            type="radio"
+                            name={`note-${note.id}`}
+                            value={answer}
+                            checked={noteAnswers[note.id] === answer}
+                            onChange={(e) =>
+                              setNoteAnswers({ ...noteAnswers,
+                                [note.id]: e.target.value,
+                              })
+                            }
+                          />
+                          {answer}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <p className="lab-status">
                   Status: {isComplete ? "Completed" : "Not completed"}
                 </p>
 
-                <button onClick={() => handleCompleteNote(note.id)}
-                disabled={isComplete}>
-                  {isComplete ? "Completed" : "Mark Complete"}
-                </button>
+                <div className="lab-actions">
+                  <button
+                    onClick={() =>
+                      setOpenNoteId(isOpen ? null : note.id)
+                    }
+                  >
+                    {isOpen ? "Hide Note" : "Read Note"}
+                  </button>
+
+                  <button
+                    onClick={() => handleCompleteNote(note.id, note.correctAnswer)}
+                    disabled={isComplete}
+                  >
+                    {isComplete ? "Completed" : "Mark Complete"}
+                  </button>
+                </div>
               </div>
             );
           })}
