@@ -69,3 +69,7 @@ Updated Home page to increase progress visibility in App.jsx and App.css
 Added button to show or hide content for each note in App.jsx
 Added multiple choice questions for each note in App.jsx and App.css
 Added lab availability status to App.jsx
+Updated navbar in App.jsx and App.css
+Tightened top margin and padding in App.css
+Added toast notifications to replace static messages in App.jsx and App.css
+Tightened bottom margin and padding in App.css

@@ -70,9 +70,9 @@ function App() {
   const [registerPassword, setRegisterPassword] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [openNoteId, setOpenNoteId] = useState(null);
   const [noteAnswers, setNoteAnswers] = useState({}); 
+  const [toast, setToast] = useState(null);
   
   const [loggedInUser, setLoggedInUser] = useState(
     localStorage.getItem("loggedInUser")
@@ -80,7 +80,7 @@ function App() {
 
   const [labs, setLabs] = useState(() => {
     const savedLabs = localStorage.getItem("labs");
-    return savedLabs ? JSON.parse(savedLabs) :initialLabs;
+    return savedLabs ? JSON.parse(savedLabs) : initialLabs;
   });
 
   const [completedNotes, setCompletedNotes] = useState(() => {
@@ -99,6 +99,14 @@ function App() {
     localStorage.setItem("completedNotes", JSON.stringify(completedNotes));
   }, [loggedInUser, labs, completedNotes]);
 
+  function showToast(text, type = "info") {
+    setToast({ text, type });
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  }
+
   async function handleRegister(e) {
     e.preventDefault();
 
@@ -114,7 +122,7 @@ function App() {
     });
 
     const text = await response.text();
-    setMessage(text);
+    showToast(text, response.ok ? "success" : "error");
   }
 
 async function handleLogin(e) {
@@ -135,21 +143,21 @@ async function handleLogin(e) {
     if (response.ok) {
       const data = await response.json();
 
-      setMessage(data.message);
+      showToast(data.message, "success");
       setLoggedInUser(data.user.email);
     } else {
       const text = await response.text();
-      setMessage(text);
+      showToast(text, "error");
     }
   } catch (err) {
     console.error(err);
-    setMessage("Something went wrong while logging in");
+    showToast("Something went wrong while logging in", "error");
   }
 }
 
   function handleLogout() {
     setLoggedInUser(null);
-    setMessage("Logged out");
+    showToast("Logged out");
   }
 
   function updateLab(labID, updates) {
@@ -177,7 +185,7 @@ async function handleLogin(e) {
       progress: 25,
     });
 
-    setMessage(data.message);
+    showToast(data.message, "success");
   }
 
   async function handleStopLab(labID) {
@@ -194,7 +202,7 @@ async function handleLogin(e) {
       submittedFlag: "",
     });
 
-    setMessage(data.message);
+    showToast(data.message);
   }
 
   async function handleResetLab(labID) {
@@ -211,10 +219,10 @@ async function handleLogin(e) {
       submittedFlag: "",
     });
 
-    setMessage(data.message);
+    showToast(data.message);
   }
 
-  async function handleSubmitFlag(e) {
+  async function handleSubmitFlag(e, labID) {
     e.preventDefault();
 
     const lab = getLab(labID);
@@ -232,7 +240,7 @@ async function handleLogin(e) {
 
       const data = await response.json();
 
-      setMessage(data.message);
+      showToast(data.message, data.correct ? "success" : "error");
 
       updateLab(labID, {
         status: data.lab.status,
@@ -241,7 +249,7 @@ async function handleLogin(e) {
       });
     } catch (err) {
         console.error("Flag submit failed:", err);
-        setMessage("Could not submit flag");
+        showToast("Could not submit flag", "error");
     }
   }
 
@@ -268,18 +276,18 @@ async function handleLogin(e) {
     const selectedAnswer = noteAnswers[noteID];
 
     if (!selectedAnswer) {
-      setMessage("Please choose an answer first.");
+      showToast("Please choose an answer first.");
       return;
     }
 
     if (selectedAnswer !== correctAnswer){
-      setMessage("Incorrect answer. Try reading the note again.");
+      showToast("Incorrect answer. Try reading the note again.", "error");
       return;
     }
 
     if (!completedNotes.includes(noteID)) {
       setCompletedNotes([...completedNotes, noteID]);
-      setMessage("Correct! Note completed.")
+      showToast("Correct! Note completed.", "success");
     }
   }
 
@@ -411,7 +419,7 @@ async function handleLogin(e) {
                 ) : (
                   <button
                     onClick={() =>
-                      setMessage(`${lab.title} is part of the 5-lab roadmap.`)
+                      showToast(`${lab.title} is part of the 5-lab roadmap.`)
                     }
                   >
                     View Plan
@@ -575,10 +583,9 @@ async function handleLogin(e) {
     <div className="page">
       <h1>SQL Hacking Website</h1>
 
-      {loggedInUser && (
-        <div className="logged-in-box">
-          <p>Logged in as {loggedInUser}</p>
-          <button onClick={handleLogout}>Logout</button>
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.text}
         </div>
       )}
 
@@ -626,21 +633,32 @@ async function handleLogin(e) {
         </div>
       ) : (
         <div>
-          <nav className="navbar">
-            <Link to="/">Home</Link>
-            <Link to="/labs">Labs</Link>
-            <Link to="/notes">Notes</Link>
-          </nav>
+
+          <header className="site-header">
+            <div className="brand">
+              <span className="brand-mark">SQL</span>
+              <span className="brand-name">SQL Hacking Academy</span>
+            </div>
+
+            <nav className="navbar">
+              <Link to="/">Home</Link>
+              <Link to="/labs">Labs</Link>
+              <Link to="/notes">Notes</Link>
+            </nav>
+
+            <div className="user-area">
+              <span>{loggedInUser}</span>
+              <button onClick={handleLogout}>Logout</button>
+            </div>
+          </header>
 
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/labs" element={<LabsPage />} />
-            <Route path="/notes" element={<NotesPage />} />
+            <Route path="/" element={HomePage()} />
+            <Route path="/labs" element={LabsPage()} />
+            <Route path="/notes" element={NotesPage()} />
           </Routes>
         </div>
       )}
-
-      {message && <p className="message">{message}</p>}
     </div>
   );
 }
