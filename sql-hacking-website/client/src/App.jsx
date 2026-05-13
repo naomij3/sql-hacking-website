@@ -294,9 +294,18 @@ async function handleLogin(e) {
   function HomePage() {
     return (
       <div className="dashboard">
-        <h2>Home</h2>
-        <p>Welcome, {loggedInUser}.</p>
-        <p>SQL Learning Dashboard</p>
+        <div className="home-hero">
+          <h2>Welcome back, {loggedInUser}.</h2>
+          <p className="hero-text">
+            Build your SQL injection skills through beginner-friendly notes,
+            quizzes, and hands-on practical labs from easy to challenging.
+          </p>
+
+          <div className="home-actions">
+            <Link to="/labs" className="primary-link"> Continue to Labs</Link>
+            <Link to="/notes" className="secondary-link">Read Notes</Link>
+          </div>
+        </div>
 
         <div className="overall-progress">
           <h3>{currentLevel}</h3>
@@ -349,7 +358,11 @@ async function handleLogin(e) {
         <div className="labs-section">
           {labs.map((lab) => (
             <div className="lab-card" key={lab.id}>
-              <h4>{lab.title}</h4>
+              <div className="lab-title-row">
+                <span className="lab-number">Lab {lab.id}</span>
+                <h4>{lab.title}</h4>
+              </div>
+              
               <p>{lab.description}</p>
 
               <p className="lab-meta">Difficulty: {lab.difficulty}</p>
@@ -581,8 +594,6 @@ async function handleLogin(e) {
   
   return (
     <div className="page">
-      <h1>SQL Hacking Website</h1>
-
       {toast && (
         <div className={`toast toast-${toast.type}`}>
           {toast.text}
@@ -636,7 +647,7 @@ async function handleLogin(e) {
 
           <header className="site-header">
             <div className="brand">
-              <span className="brand-mark">SQL</span>
+              <span className="brand-mark">SHA</span>
               <span className="brand-name">SQL Hacking Academy</span>
             </div>
 
