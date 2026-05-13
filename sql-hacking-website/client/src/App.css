@@ -24,7 +24,7 @@ body {
   margin-bottom: 32px;
   padding: 18px 32px;
   background: rgba(250, 250, 252, 0.94);
-border-bottom: 1px solid #e4e4e7;
+  border-bottom: 1px solid #e4e4e7;
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -501,4 +501,17 @@ a {
 
 .lab-title-row h4 {
   margin: 0;
+}
+
+.navbar a.active {
+  color: #8b3ff6;
+}
+
+.navbar a.active::after {
+  content: "";
+  display: block;
+  height: 3px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: #8b3ff6;
 }

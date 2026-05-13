@@ -36,17 +36,24 @@ router.post("/reset", (req, res) => {
 });
 
 router.post("/submit-flag", (req, res) => {
-  const {flag} = req.body;
-  const cleanedFlag = flag.trim();
+  const { labID, flag } = req.body;
 
-  if (cleanedFlag === "FLAG{sql_injection_basics}") {
+  const cleanedFlag = String(flag).trim();
+  const labNumber = Number(labID);
+
+  const flags = {
+    1: "FLAG{sql_injection_basics}",
+    2: "FLAG{comment_bypass}",
+  };
+
+  if (cleanedFlag === flags[labNumber]) {
     return res.json({
       correct: true,
       message: "Correct flag! Lab completed.",
       lab: {
         status: "Completed",
-        progress: 100
-      }
+        progress: 100,
+      },
     });
   }
 
@@ -55,8 +62,8 @@ router.post("/submit-flag", (req, res) => {
     message: "Wrong flag, try again.",
     lab: {
       status: "Running",
-      progress: 25
-    }
+      progress: 25,
+    },
   });
 });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import {Link, Route, Routes } from "react-router-dom";
+import { NavLink, Route, Routes } from "react-router-dom";
 import "./App.css";
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
       description: "Use SQL comments to bypass password checks.",
       objective: "Log in as the admin user by commenting out part of the query.",
       difficulty: "Easy",
-      available: false,
+      available: true,
       status: "Not started",
       progress: 0,
       url: null,
@@ -173,19 +173,18 @@ async function handleLogin(e) {
   }
 
   async function handleStartLab(labID) {
-    const response = await fetch("http://localhost:3000/labs/start", {
-      method: "POST",
-    });
-
-    const data = await response.json();
+    const labUrls = {
+      1: "http://localhost:4000",
+      2: "http://localhost:4000/lab2",
+    };
 
     updateLab(labID, {
-      status: data.lab.status,
-      url: data.lab.url,
+      status: "Running",
+      url: labUrls[labID] || null,
       progress: 25,
     });
 
-    showToast(data.message, "success");
+    showToast("Lab started", "success");
   }
 
   async function handleStopLab(labID) {
@@ -234,6 +233,7 @@ async function handleLogin(e) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          labID,
           flag: lab.submittedFlag,
         }),
       });
@@ -248,8 +248,8 @@ async function handleLogin(e) {
         submittedFlag: data.correct ? "" : lab.submittedFlag,
       });
     } catch (err) {
-        console.error("Flag submit failed:", err);
-        showToast("Could not submit flag", "error");
+      console.error("Flag submit failed:", err);
+      showToast("Could not submit flag", "error");
     }
   }
 
@@ -302,8 +302,8 @@ async function handleLogin(e) {
           </p>
 
           <div className="home-actions">
-            <Link to="/labs" className="primary-link"> Continue to Labs</Link>
-            <Link to="/notes" className="secondary-link">Read Notes</Link>
+            <NavLink to="/labs" className="primary-link"> Continue to Labs</NavLink>
+            <NavLink to="/notes" className="secondary-link">Read Notes</NavLink>
           </div>
         </div>
 
@@ -362,7 +362,7 @@ async function handleLogin(e) {
                 <span className="lab-number">Lab {lab.id}</span>
                 <h4>{lab.title}</h4>
               </div>
-              
+
               <p>{lab.description}</p>
 
               <p className="lab-meta">Difficulty: {lab.difficulty}</p>
@@ -391,7 +391,7 @@ async function handleLogin(e) {
                 </p>
               )}
 
-              {lab.id === 1 && lab.status === "Running" && (
+              {(lab.id === 1 || lab.id === 2) && lab.status === "Running" && (
                 <form
                   onSubmit={(e) => handleSubmitFlag(e, lab.id)}
                   className="flag-form"
@@ -409,7 +409,7 @@ async function handleLogin(e) {
               )}
 
               <div className="lab-actions">
-                {lab.id === 1 ? (
+                {lab.id === 1 || lab.id === 2 ? (
                   <>
                     {lab.status !== "Running" && lab.status !== "Completed" && (
                       <button onClick={() => handleStartLab(lab.id)}>
@@ -533,7 +533,11 @@ async function handleLogin(e) {
 
             return (
               <div className="lab-card" key={note.id}>
-                <h4>{note.title}</h4>
+                <div className="lab-title-row">
+                  <span className="lab-number">Note {note.id}</span>
+                  <h4>{note.title}</h4>
+                </div>
+
                 <p>{note.description}</p>
 
                 {isOpen && (
@@ -652,9 +656,9 @@ async function handleLogin(e) {
             </div>
 
             <nav className="navbar">
-              <Link to="/">Home</Link>
-              <Link to="/labs">Labs</Link>
-              <Link to="/notes">Notes</Link>
+              <NavLink to="/">Home</NavLink>
+              <NavLink to="/labs">Labs</NavLink>
+              <NavLink to="/notes">Notes</NavLink>
             </nav>
 
             <div className="user-area">
