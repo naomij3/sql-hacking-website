@@ -77,3 +77,5 @@ Redesigned website layout and colours in App.css
 Added content to Home page in App.jsx and App.css
 Added numbering to labs and notes in App.jsx and App.css
 Updated navbar to use NavLink to highlight current page in App.jsx and App.css
+Added working second lab to labs.js labServer.js and App.jsx
+Updated lab UI in labServer.js

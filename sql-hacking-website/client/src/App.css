@@ -515,3 +515,16 @@ a {
   border-radius: 999px;
   background: #8b3ff6;
 }
+
+.flag-form {
+  margin-top: 16px;
+  margin-bottom: 18px;
+}
+
+.flag-form input {
+  margin-bottom: 12px;
+}
+
+.flag-form button {
+  width: auto;
+}
