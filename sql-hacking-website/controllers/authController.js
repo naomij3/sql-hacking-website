@@ -5,8 +5,10 @@ exports.register = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    //Store hashed password
     const hash = await bcrypt.hash(password, 10);
 
+    //Parameterised queries using placeholders prevent SQL injection
     db.query(
       "INSERT INTO users (email, password_hash) VALUES (?, ?)",
       [email, hash],
@@ -23,6 +25,7 @@ exports.register = async (req, res) => {
 exports.login = (req, res) => {
   const { email, password } = req.body;
 
+  //Email look up using parameterised query
   db.query(
     "SELECT * FROM users WHERE email = ?",
     [email],
@@ -32,7 +35,7 @@ exports.login = (req, res) => {
       const user = results[0];
       if (!user) return res.status(401).send("Invalid login");
 
-      const match = await bcrypt.compare(password, user.password_hash);
+      const match = await bcrypt.compare(password, user.password_hash); //compare hashed password with stored hash
 
       if (!match) return res.status(401).send("Invalid login");
 

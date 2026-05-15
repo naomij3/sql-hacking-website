@@ -79,3 +79,10 @@ Added numbering to labs and notes in App.jsx and App.css
 Updated navbar to use NavLink to highlight current page in App.jsx and App.css
 Added working second lab to labs.js labServer.js and App.jsx
 Updated lab UI in labServer.js
+Converted lab 1 to demonstrate breaking queries in labs.js and labServer.js
+Added lab 3 to show always true conditions in labs.js, labServer.js and App.jsx
+Updated Notes page and added content to intro note in App.jsx and App.css
+Added lab_products database to labdb
+Added lab 4 logic to labServer.js
+Added buttons and flag submission to lab 4 in App.jsx and labs.js
+Code cleanup

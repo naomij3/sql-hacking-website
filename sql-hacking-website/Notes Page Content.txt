@@ -1,0 +1,97 @@
+Notes Page Content
+Note 0 - Introduction to SQL injections
+Note 1 - Breaking a query
+Note 2 - Comment out query
+Note 3 - Always true conditions
+Note 4 - Union-Based extraction
+Note 5 - Blind SQL injection
+Note 6 - How to protect against SQL attacks
+
+Note 0 -
+To understand what SQL injection is, it is important to first understand how websites use databases to store user information. SQL is a language used to create and query databases that websites rely on to personalise the experience for each user.
+
+These databases can hold important information such as usernames, passwords, telephone numbers, addresses, credit card information, and much more. A user is usually shown their information after logging into the website.
+
+A login form normally has two input fields: one for a username and one for a password. The input is then placed into a SQL query that asks the database whether that user exists.
+
+For example, if a user has the username ed and the password London, the query might look like this:              
+
+SELECT * from users WHERE username = 'ed' AND password = 'London'
+
+If the database finds this user, the login is successful. If the input cannot be found in the database, the login fails.
+
+The danger lies in malicious users manipulating the SQL query to gain access to user or admin accounts, or to retrieve information from the database.
+
+Note 1 -
+
+The simplest way to demonstrate SQL query manipulation is to get the database to throw an error. This means something we have inputted has affected the query. 
+
+An easy way to demonstrate this is to throw a syntax error. If a website has a login page and low security, putting an apostrophe between characters in the user input fields. This disrupts the query and closes it early, leaving characters outside the argument and the program returns an error.
+
+Quick Check - Why does an apostrophe throw a syntax error ?
+*It closes the argument early and leave characters out*
+-SQL does not use apostrophes-
+-Apostrophes are only used for math-
+
+Note 2 -
+
+Now that we know SQL can be manipulated, and it takes user input as raw data, the opportunities widen and allow for more dangerous SQL injections. 
+
+SQL uses two hyphens (--) to comment out data. A comment-based injection comments out the remaining argument to force true conditions. 
+
+In a login system, both the username and password conditions must match the database values. By inserting (' -- ) in the username field, SQL effectively ignores the password check and returns that user based purely on knowing the username.
+
+Quick Check - What does -- do in SQL ?
+*Syntax to comment*
+-Syntax to subtract-
+-Throws a syntax error-
+
+Note 3 -
+
+SQL injections rely heavily on returning true. An effective SQL injection forces true statements into the argument by using Boolean values. 
+
+The statement "username= 'user' OR '1'='1" will always return true. As long as one argument in an OR statement is true, the whole statement returns true.
+ 
+Logic manipulation provides dangerous access to unauthorised users and the SQL will return database entries with a simple bypass.
+
+Quick Check - Which Boolean value returns a true if at least one parameter is true ?
+*OR*
+-AND-
+-XOR-
+
+Note 4 -
+
+UNION SELECT is a SQL command following a primary SELECT used to retrieve value from other tables and must both return the same number of columns. This is dangerous as sensitive information can be retrieved with a WHERE clause. 
+
+The more information on the database is available, the more dangerous this injection is. Without this information, the number of columns, the names of databases, the injection cannot be written.
+
+Quick Check - What information is key to craft a UNION-based execution ?
+*Database structure*
+-Admin password-
+-SQl version-
+
+Note 5 -
+
+Blind SQL relies on true or false questions asked to the database and inferring answers based off the response. For example, 1=1 can be injected and if the page responds differently, then this indicates the query is vulnerable to an SQL injection. 
+
+Furthermore, a condition can be checked if true by executing a time delay on the page. If the page waits to load, then the parameter is true. This is a brute-force method that is very time consuming and so is typically automated.
+
+Quick Check - What makes an SQL injection blind ?
+*Answers are inferred by page behaviour*
+-Answers are irretrievable-
+-Answers get deleted from the database-
+
+Note 6 - 
+
+SQL injections get executed when user input is treated as a command and not data. To prevent these kinds of attacks, it is vital to properly handle user input. Instead of directly inputting whatever the user has submitted into the SQL query, the input is converted from code to data. 
+
+The most secure method is using prepared statements with parameterised queries. Prepared statements maintain the integrity of the SQL query, and user input is passed through parameterised queries to disregard any commands and stored as data. For example, when taking a username, an unsafe SQL query would look like this :
+
+username = input("Username: ");
+const query = `SELECT * FROM users WHERE username = '${username}'`;
+
+The user input is submitted directly into the query with no checks, this is very dangerous. A better version using prepared statements and parameterised queries looks like this:
+
+const query = "SELECT * FROM users WHERE username = ?";
+
+All queries should be parameterised to secure against SQL injections.

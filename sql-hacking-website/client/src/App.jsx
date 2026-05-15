@@ -3,12 +3,13 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import "./App.css";
 
 function App() {
+  //Lab card information and local progress
   const initialLabs = [
     {
       id: 1,
-      title: "SQL Injection Basics",
-      description: "Bypass a vulnerable login form using basic SQL injection.",
-      objective: "Log in without knowing the correct password.",
+      title: "Throwing an SQL error",
+      description: "Use an apostrophe to see how user input can break an SQL query.",
+      objective: "Throw an SQL error to understand how input fields affects backend queries.",
       difficulty: "Very Easy",
       available: true,
       status: "Not started",
@@ -20,7 +21,7 @@ function App() {
       id: 2,
       title: "Comment-Based Login Bypass",
       description: "Use SQL comments to bypass password checks.",
-      objective: "Log in as the admin user by commenting out part of the query.",
+      objective: "Log in as the admin user by commenting out the rest of the query.",
       difficulty: "Easy",
       available: true,
       status: "Not started",
@@ -30,11 +31,11 @@ function App() {
     },
     {
       id: 3,
-      title: "Error-Based SQL Injection",
-      description: "Use database errors to understand vulnerable query structure.",
-      objective: "Trigger an error and use it to craft a working payload.",
+      title: "Always-True Login Bypass",
+      description: "Use a true condition to make the login query return a valid user.",
+      objective: "Log in as admin by passing an always true Booleon condition.",
       difficulty: "Medium",
-      available: false,
+      available: true,
       status: "Not started",
       progress: 0,
       url: null,
@@ -46,7 +47,7 @@ function App() {
       description: "Use UNION queries to extract hidden information.",
       objective: "Extract a hidden flag from another database table.",
       difficulty: "Hard",
-      available: false,
+      available: true,
       status: "Not started",
       progress: 0,
       url: null,
@@ -74,6 +75,7 @@ function App() {
   const [noteAnswers, setNoteAnswers] = useState({}); 
   const [toast, setToast] = useState(null);
   
+  //Load saved state from localStorage to maintain progress
   const [loggedInUser, setLoggedInUser] = useState(
     localStorage.getItem("loggedInUser")
   );
@@ -88,6 +90,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  //Persist login, lab, and note progress locally (browser, not user)
   useEffect(() => {
     if (loggedInUser) {
       localStorage.setItem("loggedInUser", loggedInUser);
@@ -99,6 +102,7 @@ function App() {
     localStorage.setItem("completedNotes", JSON.stringify(completedNotes));
   }, [loggedInUser, labs, completedNotes]);
 
+  //Display temporary messages to the user
   function showToast(text, type = "info") {
     setToast({ text, type });
 
@@ -160,6 +164,7 @@ async function handleLogin(e) {
     showToast("Logged out");
   }
 
+  //Update only the current lab
   function updateLab(labID, updates) {
     setLabs((currentLabs) =>
       currentLabs.map((lab) =>
@@ -176,6 +181,8 @@ async function handleLogin(e) {
     const labUrls = {
       1: "http://localhost:4000",
       2: "http://localhost:4000/lab2",
+      3: "http://localhost:4000/lab3",
+      4: "http://localhost:4000/lab4",
     };
 
     updateLab(labID, {
@@ -221,6 +228,7 @@ async function handleLogin(e) {
     showToast(data.message);
   }
 
+  //Backend receives submitted flags to avoid storing them in the frontend
   async function handleSubmitFlag(e, labID) {
     e.preventDefault();
 
@@ -253,6 +261,7 @@ async function handleLogin(e) {
     }
   }
 
+  //Calculate total course progress: labs are worth 75%, notes are worth 25%.
   const completedLabCount = labs.filter((lab) => lab.status === "Completed").length;
 
   const labContribution = completedLabCount * 15;
@@ -272,6 +281,7 @@ async function handleLogin(e) {
 
   const currentLevelNumber = Math.min(5, Math.floor(overallProgress / 20) + 1);
 
+  //User must check the correct answer in order to mark note as complete
   function handleCompleteNote(noteID, correctAnswer) {
     const selectedAnswer = noteAnswers[noteID];
 
@@ -291,6 +301,7 @@ async function handleLogin(e) {
     }
   }
 
+  //Home page displays current user level and progress, and buttons to navigate to labs and notes
   function HomePage() {
     return (
       <div className="dashboard">
@@ -349,6 +360,7 @@ async function handleLogin(e) {
     );
   }
 
+  //Lab page contains all 5 labs alongside their URLs
   function LabsPage() {
     return (
       <div className="dashboard">
@@ -379,7 +391,7 @@ async function handleLogin(e) {
               </div>
 
               <p className="lab-availability">
-                {lab.available ? "Available now" : "Planned lab"}
+                {lab.available ? "Available now" : "Planned"}
               </p>
 
               {lab.url && (
@@ -391,7 +403,8 @@ async function handleLogin(e) {
                 </p>
               )}
 
-              {(lab.id === 1 || lab.id === 2) && lab.status === "Running" && (
+              {(lab.id === 1 || lab.id === 2 || lab.id === 3 || lab.id === 4) &&
+               lab.status === "Running" && (
                 <form
                   onSubmit={(e) => handleSubmitFlag(e, lab.id)}
                   className="flag-form"
@@ -409,7 +422,7 @@ async function handleLogin(e) {
               )}
 
               <div className="lab-actions">
-                {lab.id === 1 || lab.id === 2 ? (
+                {lab.id === 1 || lab.id === 2 || lab.id === 3 || lab.id === 4 ? (
                   <>
                     {lab.status !== "Running" && lab.status !== "Completed" && (
                       <button onClick={() => handleStartLab(lab.id)}>
@@ -435,7 +448,7 @@ async function handleLogin(e) {
                       showToast(`${lab.title} is part of the 5-lab roadmap.`)
                     }
                   >
-                    View Plan
+                    Preview
                   </button>
                 )}
               </div>
@@ -446,78 +459,250 @@ async function handleLogin(e) {
     );
   }
 
+  //Notes page contains SQL injection guides and quizzes
   function NotesPage() {
     const notes = [
       {
+        id: 0,
+        title: "Introduction to SQL injections",
+        description: "Understand what SQL injection is and why it is dangerous.",
+        content: (
+          <>
+            <p>
+              To understand what SQL injection is, it is important to first understand
+              how websites use databases to store user information. SQL is a language
+              used to create and query databases that websites rely on to personalise
+              the experience for each user.
+            </p>
+
+            <p>
+              These databases can hold important information such as usernames,
+              passwords, telephone numbers, addresses, credit card information, and much
+              more. A user is usually shown their information after logging into the
+              website.
+            </p>
+
+            <p>
+              A login form normally has two input fields: one for a username and one for
+              a password. The input is then placed into a SQL query that asks the
+              database whether that user exists.
+            </p>
+
+            <p>
+              For example, if a user has the username <strong>ed</strong> and the
+              password <strong>London</strong>, the query might look like this:
+            </p>
+
+            <pre className="code-block">
+              <code>
+                {`SELECT * FROM users WHERE username = 'ed' AND password = 'London';`}
+              </code>
+            </pre>
+
+            <p>
+              If the database finds this user, the login is successful. If the input
+              cannot be found in the database, the login fails.
+            </p>
+
+            <p>
+              The danger lies in malicious users manipulating the SQL query to gain
+              access to user or admin accounts, or to retrieve information from the
+              database.
+            </p>
+          </>
+        ),
+        question: null,
+        answers: [],
+        correctAnswer: null,
+      },
+      {
         id: 1,
-        title: "What is SQL Injection?",
-        description: "Learn what SQL injection is and how it works.",
-        content:
-          "SQL injection happens when user input is placed directly into a SQL query without being safely handled. This can let an attacker change the meaning of the query and access data or bypass checks.",
-        question: "What causes SQL injection?",
+        title: "Breaking a query",
+        description: "Learn how to throw an error in a query.",
+        content:(
+          <>
+            <p>
+              The simplest way to demonstrate SQL query manipulation is to get the database to throw an error.
+              This means something we have inputted has affected the query.
+            </p>
+            
+            <p>
+              An easy way to demonstrate this is to throw a syntax error. If a website has a login page 
+              and low security, putting an apostrophe between characters in the user input fields. 
+              This disrupts the query and closes it early, leaving characters outside the argument 
+              and the program returns an error.
+            </p>
+          </>
+        ),
+        question: "Why does an apostrophe throw a syntax error?",
         answers: [
-          "Using CSS incorrectly",
-          "Putting unsanitised user input directly into SQL queries",
-          "Using too many React components",
+          "It closes the argument early and leave characters out",
+          "SQL does not use apostrophes",
+          "Apostrophes are only used for math",
         ],
-        correctAnswer: "Putting unsanitised user input directly into SQL queries",
+        correctAnswer: "It closes the argument early and leave characters out",
       },
       {
         id: 2,
-        title: "Login Bypass Basics",
-        description: "Understand how weak login queries can be bypassed.",
-        content:
-          "A login form usually checks whether a username and password match a database record. If the query is built unsafely, input like ' OR '1'='1 can make the condition always true.",
-        question: "Why can ' OR '1'='1 bypass a weak login?",
+        title: "Comment out query",
+        description: "Learn how quotes and SQL comments affect a query.",
+        content:(
+          <>
+            <p>
+              Now that we know SQL can be manipulated, and it takes user input as raw data, 
+              the opportunities widen and allow for more dangerous SQL injections. 
+            </p>
+            
+            <p>
+              SQL uses two hyphens -- to comment out data. A comment-based injection 
+              comments out the remaining argument to force true conditions. 
+            </p>
+
+            <p>In a login system, both the username and password conditions must match 
+              the database values. By inserting " ' -- " in the username field, 
+              SQL effectively ignores the password check and returns that user based purely 
+              on knowing the username.
+            </p>
+          </>
+        ),
+        question: "What does -- do in SQL?",
         answers: [
-          "It deletes the users table",
-          "It makes the SQL condition always true",
-          "It encrypts the password",
+          "Syntax to subtract",
+          "Syntax to comment",
+          "Throws a syntax error",
         ],
-        correctAnswer: "It makes the SQL condition always true",
+        correctAnswer: "Syntax to comment",
       },
       {
         id: 3,
-        title: "Quotes, Comments, and Query Structure",
-        description: "Learn how quotes and SQL comments affect a query.",
-        content:
-          "Single quotes can break out of string values in SQL. Comment markers such as -- can cause the rest of a query to be ignored, which is why payloads like admin' -- can bypass password checks.",
-        question: "What does -- commonly do in SQL?",
+        title: "Always-true conditions",
+        description: "Understand how weak login queries can be bypassed.",
+        content:(
+          <>
+            <p>
+              SQL injections rely heavily on returning true. An effective SQL injection forces 
+              true statements into the argument by using Boolean values.
+            </p>
+            
+            <p>
+              The statement "username= 'user' OR '1'='1" will always return true. As long as 
+              one argument in an OR statement is true, the whole statement returns true.
+            </p>
+
+            <p>
+              Logic manipulation provides dangerous access to unauthorised users and the SQL 
+              will return database entries with a simple bypass.
+            </p>
+          </>
+        ),
+        question: "Which Boolean value returns a true if at least one parameter is true?",
         answers: [
-          "Comments out the rest of the query",
-          "Starts a new database",
-          "Creates a password hash",
+          "OR",
+          "AND",
+          "XOR",
         ],
-        correctAnswer: "Comments out the rest of the query",
+        correctAnswer: "OR",
       },
       {
         id: 4,
         title: "UNION-Based Injection",
         description: "Learn how UNION can combine results from different queries.",
-        content:
-          "UNION lets SQL combine results from multiple SELECT statements. In an injection attack, this can be abused to display data from other tables if the attacker can match the number and type of columns.",
-        question: "What does UNION do in SQL?",
+        content: (
+          <>
+            <p>
+              UNION SELECT is a SQL command following a primary SELECT used to retrieve value from 
+              other tables and must both return the same number of columns. This is dangerous as 
+              sensitive information can be retrieved with a WHERE clause. 
+            </p>
+
+            <p>
+              The more information on the database is available, the more dangerous this injection is. 
+              Without this information, the number of columns, the names of databases, the injection 
+              cannot be written.
+            </p>
+          </>
+        ),
+        question: "What information is key to craft a UNION-based execution?",
         answers: [
-          "Combines results from multiple SELECT queries",
-          "Blocks a login attempt",
-          "Deletes duplicate users automatically",
+          "Admin password",
+          "SQL version",
+          "Database structure",
         ],
-        correctAnswer: "Combines results from multiple SELECT queries",
+        correctAnswer: "Database structure",
       },
       {
         id: 5,
         title: "Blind SQL Injection",
         description: "Understand how attackers infer data without direct output.",
-        content:
-          "Blind SQL injection happens when the page does not directly show database results. Instead, attackers infer information from differences in responses, such as true/false messages or delays.",
-        question: "What makes blind SQL injection different?",
+        content:(
+          <>
+            <p>
+              Blind SQL relies on true or false questions asked to the database and 
+              inferring answers based off the response. For example, 1=1 can be injected 
+              and if the page responds differently, then this indicates the query is vulnerable 
+              to an SQL injection.
+            </p>
+
+            <p>
+              Furthermore, a condition can be checked if true by executing a time delay on the page. 
+              If the page waits to load, then the parameter is true. This is a brute-force method 
+              that is very time consuming and so is typically automated.
+            </p>
+          </>
+        ), 
+        question: "What makes an SQL injection blind?",
         answers: [
-          "The attacker cannot use quotes",
-          "The database is not SQL-based",
-          "The attacker infers results indirectly from page behaviour",
+          "Answers get deleted from the database",
+          "Answers are inferred by page behaviour",
+          "Answers are irretrievable",
         ],
         correctAnswer:
-          "The attacker infers results indirectly from page behaviour",
+          "Answers are inferred by page behaviour",
+      },
+      {
+        id: 6,
+        title: "Defending Against SQL Injection",
+        description: "Learn the basic solutions that prevent SQL injection vulnerabilities.",
+        content: (
+          <>
+            <p>
+              SQL injections get executed when user input is treated as a command and not data. 
+              To prevent these kinds of attacks, it is vital to properly handle user input. 
+              Instead of directly inputting whatever the user has submitted into the SQL query, 
+              the input is converted from code to data. 
+            </p>
+
+            <p>
+              The most secure method is using prepared statements with parameterised queries. 
+              Prepared statements maintain the integrity of the SQL query, and user input is passed 
+              through parameterised queries to disregard any commands and stored as data. 
+              For example, when taking a username, an unsafe SQL query would look like this:
+            </p>
+
+            <pre className="code-block">
+              <code>
+                {"SELECT * FROM users WHERE username = 'username';"}
+              </code>
+            </pre>
+
+            <p>
+              The user input is submitted directly into the query with no checks, this is very 
+              dangerous. A better version using prepared statements and parameterised queries 
+              looks like this:
+            </p>
+
+            <pre className="code-block">
+              <code>
+                {"SELECT * FROM users WHERE username = ?;"}
+              </code>
+            </pre>
+
+            <p>All queries should be parameterised to secure against SQL injections.</p>
+          </>
+        ),
+        question: null,
+        answers: [],
+        correctAnswer: null,
       },
     ];
 
@@ -534,7 +719,9 @@ async function handleLogin(e) {
             return (
               <div className="lab-card" key={note.id}>
                 <div className="lab-title-row">
-                  <span className="lab-number">Note {note.id}</span>
+                  <span className="lab-number">
+                    {note.id === 0 ? "Intro" : note.id === 6 ? "Final" : `Note ${note.id}`}
+                  </span>
                   <h4>{note.title}</h4>
                 </div>
 
@@ -542,36 +729,39 @@ async function handleLogin(e) {
 
                 {isOpen && (
                   <div className="note-content">
-                    <p>{note.content}</p>
+                    <div>{note.content}</div>
+                      {note.question && (
+                        <div className="note-check">
+                          <h5>Quick Check</h5>
+                          <p>{note.question}</p>
 
-                    <div className="note-check">
-                      <h5>Quick Check</h5>
-                      <p>{note.question}</p>
-
-                      {note.answers.map((answer) => (
-                        <label className="answer-option" key = {answer}>
-                          <input 
-                            type="radio"
-                            name={`note-${note.id}`}
-                            value={answer}
-                            checked={noteAnswers[note.id] === answer}
-                            onChange={(e) =>
-                              setNoteAnswers({ ...noteAnswers,
-                                [note.id]: e.target.value,
-                              })
-                            }
-                          />
-                          {answer}
-                        </label>
-                      ))}
-                    </div>
+                          {note.answers.map((answer) => (
+                            <label className="answer-option" key = {answer}>
+                              <input 
+                                type="radio"
+                                name={`note-${note.id}`}
+                                value={answer}
+                                checked={noteAnswers[note.id] === answer}
+                                onChange={(e) =>
+                                  setNoteAnswers({ ...noteAnswers,
+                                    [note.id]: e.target.value,
+                                  })
+                                }
+                              />
+                              {answer}
+                            </label>
+                          ))}
+                        </div>
+                      )}
                   </div>
                 )}
 
-                <p className="lab-status">
-                  Status: {isComplete ? "Completed" : "Not completed"}
-                </p>
-
+                {note.question && (
+                  <p className="lab-status">
+                    Status: {isComplete ? "Completed" : "Not completed"}
+                  </p>
+                )}
+                
                 <div className="lab-actions">
                   <button
                     onClick={() =>
@@ -581,12 +771,14 @@ async function handleLogin(e) {
                     {isOpen ? "Hide Note" : "Read Note"}
                   </button>
 
-                  <button
-                    onClick={() => handleCompleteNote(note.id, note.correctAnswer)}
-                    disabled={isComplete}
-                  >
-                    {isComplete ? "Completed" : "Mark Complete"}
-                  </button>
+                  {note.question && (
+                    <button
+                      onClick={() => handleCompleteNote(note.id, note.correctAnswer)}
+                      disabled={isComplete}
+                    >
+                      {isComplete ? "Completed" : "Mark Complete"}
+                    </button>
+                  )}
                 </div>
               </div>
             );

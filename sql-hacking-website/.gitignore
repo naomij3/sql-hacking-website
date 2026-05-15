@@ -17,3 +17,6 @@ Thumbs.db
 
 # lab dependencies
 labs/*/node_modules/
+
+# local development cache
+.vite/

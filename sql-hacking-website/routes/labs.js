@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+
+//Lab states update the frontend React App
 router.post("/start", (req, res) => {
   res.json({
     message: "Lab started",
@@ -38,12 +40,17 @@ router.post("/reset", (req, res) => {
 router.post("/submit-flag", (req, res) => {
   const { labID, flag } = req.body;
 
+  //Flag submission made easier by removing accidental spaces or lines
   const cleanedFlag = String(flag).trim();
   const labNumber = Number(labID);
 
+  //Expected flag results for each lab
+  //Stored on backend as to not be visible to the user
   const flags = {
-    1: "FLAG{sql_injection_basics}",
+    1: "FLAG{query_broken}",
     2: "FLAG{comment_bypass}",
+    3: "FLAG{true_condition}",
+    4: "FLAG{union_extraction}",
   };
 
   if (cleanedFlag === flags[labNumber]) {

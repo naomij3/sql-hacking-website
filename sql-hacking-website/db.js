@@ -2,6 +2,8 @@ const mysql = require("mysql2");
 
 require("dotenv").config();
 
+
+//Environment variables are used so database credentials are not committed
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -9,6 +11,7 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
+//Check database connection to the backend
 db.connect((err) => {
   if (err) {
     console.error("DB connection failed:", err);
@@ -17,4 +20,5 @@ db.connect((err) => {
   }
 });
 
+//Export the connection for controllers to use
 module.exports = db;
